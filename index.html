@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Calendario Laboral</title>
+    
+    <!-- Configuración PWA y Móvil -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2c3e50">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Calendario">
+    <link rel="apple-touch-icon" href="icono-192.png">
+
+    <style>
+        /* Desactivar comportamientos predeterminados de navegador web */
+        * {
+            -webkit-tap-highlight-color: transparent;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0; 
+            padding: 15px;
+            padding-bottom: 150px; /* Margen para que el panel inferior no tape el contenido */
+            
+            /* Apariencia de App Nativa */
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            overscroll-behavior-y: none; /* Bloquea el gesto de refresco al deslizar hacia abajo */
+        }
+
+        header { text-align: center; margin-bottom: 15px; }
+        
+        .navegacion-ano {
+            display: flex; align-items: center; justify-content: center; gap: 20px; margin: 15px 0;
+        }
+        .navegacion-ano button {
+            background-color: #fff; border: 1px solid #ccc; border-radius: 50%; width: 45px; height: 45px;
+            font-size: 1.2em; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333;
+        }
+        .navegacion-ano button:active { background-color: #e0e0e0; }
+        #display-ano { font-size: 2em; font-weight: bold; color: #2c3e50; min-width: 100px; }
+
+        .resumen-top {
+            background: #fff; padding: 15px; border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px;
+        }
+        .resumen-top ul {
+            list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; 
+            justify-content: center; gap: 8px; font-size: 0.9em;
+        }
+        .resumen-top li {
+            background: #fdfdfd; border: 1px solid #eaeaea; padding: 8px 12px;
+            border-radius: 20px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+
+        #contenedor-calendario {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;
+        }
+        .mes {
+            background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .mes h3 { text-align: center; margin-top: 0; text-transform: uppercase; font-size: 1.1em; color: #2c3e50; }
+
+        .dias-grid {
+            display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center;
+        }
+        .dia-semana { font-weight: bold; font-size: 0.8em; color: #777; margin-bottom: 5px; }
+        .dia {
+            padding: 9px 0; border: 1px solid #eee; border-radius: 6px; 
+            cursor: pointer; font-size: 0.9em; transition: transform 0.05s, border-color 0.1s;
+        }
+        .vacio { border: none; background: transparent; cursor: default; }
+
+        .dia.seleccionado {
+            outline: 3px solid #000; outline-offset: -2px;
+            transform: scale(1.12); z-index: 10; position: relative; box-shadow: 0px 4px 8px rgba(0,0,0,0.25);
+        }
+        .dia.fin-semana { background-color: #ffe6e6; color: #cc0000; font-weight: bold; }
+
+        /* === COLORES DE ESTADOS === */
+        .dia.festivo { background-color: #ff0000 !important; color: white !important; font-weight: bold !important; }
+        .dia.vacaciones { background-color: #00ff00 !important; color: black !important; font-weight: normal !important; }
+        .dia.permiso { background-color: #00ffff !important; color: black !important; font-weight: normal !important; }
+        .dia.erte_colectivo { background-color: #3d6cb9 !important; color: white !important; font-weight: normal !important; }
+        .dia.erte_individual { background-color: #ffff00 !important; color: black !important; font-weight: normal !important; }
+        .dia.industrial { background-color: #38761d !important; color: white !important; font-weight: normal !important; }
+        .dia.curso { background-color: #f39200 !important; color: black !important; font-weight: normal !important; }
+
+        .controles { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 10px; }
+        .controles button { 
+            padding: 10px 15px; font-size: 0.9em; cursor: pointer; 
+            border-radius: 10px; border: 1px solid #ccc; font-weight: bold; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08); background-color: #fff;
+        }
+        
+        /* === PANEL ACCIONES FIJO EN LA PARTE INFERIOR === */
+        #panel-acciones {
+            display: none;
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            z-index: 9999;
+            padding: 12px 10px 25px 10px;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 2px solid #ddd;
+            border-radius: 18px 18px 0 0;
+            box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .btn-accion {
+            border: 1px solid #aaa; padding: 10px 12px; margin: 3px; 
+            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.85em;
+        }
+        .footer-backup { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
+        .footer-backup button { padding: 8px 12px; font-size: 0.85em; cursor: pointer; border-radius: 6px; border: 1px solid #aaa; background: #fff; margin: 4px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 style="margin-top: 0; margin-bottom: 5px; color: #2c3e50;">🗓️ Mi Calendario</h1>
+        
+        <div class="navegacion-ano">
+            <button id="btn-ano-ant">◄</button>
+            <div id="display-ano"></div>
+            <button id="btn-ano-sig">►</button>
+        </div>
+
+        <div class="controles">
+            <button id="btn-festivos" style="background-color: #e6f7ff;">🎉 Festivos</button>
+            <button id="btn-vacaciones" style="background-color: #e6ffe6;">🟢 Vacaciones</button>
+            <button id="btn-editar">✏️ Activar Edición</button>
+        </div>
+    </header>
+
+    <div class="resumen-top">
+        <ul>
+            <li>🔴 Festivos: <strong id="count-festivo">0</strong></li>
+            <li>🟢 Vacaciones: <strong id="count-vacaciones">0</strong></li>
+            <li>🔵 D. Personal: <strong id="count-permiso">0</strong></li>
+            <li>🔷 ERTE Total: <strong id="count-erte-colectivo">0</strong></li>
+            <li>🟡 ERTE Ind: <strong id="count-erte-individual">0</strong></li>
+            <li>🌲 J. Ind: <strong id="count-industrial">0</strong></li>
+            <li>🟠 Cursos: <strong id="count-curso">0</strong></li>
+        </ul>
+    </div>
+
+    <main>
+        <div id="contenedor-calendario"></div>
+    </main>
+
+    <!-- PANEL FLOTANTE EN LA PARTE INFERIOR -->
+    <div id="panel-acciones">
+        <span style="font-weight: bold; display: block; margin-bottom: 8px; font-size: 0.9em; color: #333;">Aplicar a los días seleccionados:</span>
+        <button class="btn-accion" data-tipo="festivo" style="background-color: #ff0000; color: white;">Festivo</button>
+        <button class="btn-accion" data-tipo="vacaciones" style="background-color: #00ff00; color: black;">Vacaciones</button>
+        <button class="btn-accion" data-tipo="permiso" style="background-color: #00ffff; color: black;">Día personal</button>
+        <button class="btn-accion" data-tipo="erte_colectivo" style="background-color: #3d6cb9; color: white;">ERTE Total</button>
+        <button class="btn-accion" data-tipo="erte_individual" style="background-color: #ffff00; color: black;">ERTE Ind.</button>
+        <button class="btn-accion" data-tipo="industrial" style="background-color: #38761d; color: white;">J. Ind.</button>
+        <button class="btn-accion" data-tipo="curso" style="background-color: #f39200; color: black;">Curso</button>
+        <button class="btn-accion" data-tipo="" style="background: #fff; color: black; border: 1px solid #ccc;">Borrar</button>
+    </div>
+
+    <div class="footer-backup">
+        <button id="btn-exportar">📥 Exportar Copia de Seguridad</button>
+        <button id="btn-importar">📤 Importar Copia de Seguridad</button>
+        <input type="file" id="input-file-import" accept=".json" style="display: none;">
+    </div>
+
+    <script>
+        const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        
+        let anoActual = new Date().getFullYear();
+        document.getElementById('display-ano').innerText = anoActual;
+
+        let modoEdicion = false;
+        let diasSeleccionados = new Set();
+
+        function obtenerDatosStorage() {
+            const datos = localStorage.getItem('mi_calendario_dias');
+            return datos ? JSON.parse(datos) : {};
+        }
+
+        function guardarDatosStorage(datosObj) {
+            localStorage.setItem('mi_calendario_dias', JSON.stringify(datosObj));
+        }
+
+        document.getElementById('btn-ano-ant').addEventListener('click', () => {
+            anoActual--;
+            document.getElementById('display-ano').innerText = anoActual;
+            limpiarSeleccion();
+            cargarDatos();
+        });
+
+        document.getElementById('btn-ano-sig').addEventListener('click', () => {
+            anoActual++;
+            document.getElementById('display-ano').innerText = anoActual;
+            limpiarSeleccion();
+            cargarDatos();
+        });
+
+        function cargarDatos() {
+            dibujarCalendario(anoActual);
+            actualizarContadores();
+        }
+
+        function dibujarCalendario(ano) {
+            const contenedor = document.getElementById('contenedor-calendario');
+            contenedor.innerHTML = ''; 
+
+            const todosLosDatos = obtenerDatosStorage();
+
+            for (let mes = 0; mes < 12; mes++) {
+                const divMes = document.createElement('div');
+                divMes.className = 'mes';
+                divMes.innerHTML = `<h3>${nombresMeses[mes]}</h3>`;
+
+                const divGrid = document.createElement('div');
+                divGrid.className = 'dias-grid';
+
+                const diasSemana = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+                diasSemana.forEach(d => { divGrid.innerHTML += `<div class="dia-semana">${d}</div>`; });
+
+                let primerDia = new Date(ano, mes, 1).getDay();
+                primerDia = primerDia === 0 ? 6 : primerDia - 1; 
+                const diasEnMes = new Date(ano, mes + 1, 0).getDate();
+
+                for (let i = 0; i < primerDia; i++) {
+                    divGrid.innerHTML += `<div class="vacio"></div>`;
+                }
+
+                for (let dia = 1; dia <= diasEnMes; dia++) {
+                    const mesStr = String(mes + 1).padStart(2, '0');
+                    const diaStr = String(dia).padStart(2, '0');
+                    const fechaMySQL = `${ano}-${mesStr}-${diaStr}`; 
+
+                    const fechaParaDiaSemana = new Date(ano, mes, dia);
+                    const diaSemana = fechaParaDiaSemana.getDay();
+                    const claseFinSemana = (diaSemana === 0 || diaSemana === 6) ? 'fin-semana' : '';
+
+                    let claseTipo = todosLosDatos[fechaMySQL] || '';
+                    if (claseTipo === 'erte') claseTipo = 'erte_colectivo';
+
+                    divGrid.innerHTML += `
+                        <div class="dia ${claseTipo} ${claseFinSemana}" data-fecha="${fechaMySQL}" onclick="manejarClickDia(this)">
+                            ${dia}
+                        </div>`;
+                }
+                divMes.appendChild(divGrid);
+                contenedor.appendChild(divMes);
+            }
+        }
+
+        function manejarClickDia(elemento) {
+            if (!modoEdicion) return; 
+            
+            const fecha = elemento.getAttribute('data-fecha');
+            
+            if (diasSeleccionados.has(fecha)) {
+                diasSeleccionados.delete(fecha);
+                elemento.classList.remove('seleccionado');
+            } else {
+                diasSeleccionados.add(fecha);
+                elemento.classList.add('seleccionado');
+            }
+        }
+
+        document.getElementById('btn-editar').addEventListener('click', (e) => {
+            modoEdicion = !modoEdicion;
+            const panel = document.getElementById('panel-acciones');
+            
+            if (modoEdicion) {
+                e.target.innerText = "❌ Cancelar Edición";
+                e.target.style.background = "#ff9999"; 
+                panel.style.display = 'block'; 
+            } else {
+                e.target.innerText = "✏️ Activar Edición";
+                e.target.style.background = ""; 
+                panel.style.display = 'none'; 
+                limpiarSeleccion();
+            }
+        });
+
+        function limpiarSeleccion() {
+            diasSeleccionados.clear();
+            document.querySelectorAll('.dia.seleccionado').forEach(el => el.classList.remove('seleccionado'));
+        }
+
+        document.querySelectorAll('.btn-accion').forEach(boton => {
+            boton.addEventListener('click', (e) => {
+                const nuevoTipo = e.target.getAttribute('data-tipo');
+                
+                if (diasSeleccionados.size === 0) {
+                    alert("Primero selecciona algún día en el calendario.");
+                    return;
+                }
+
+                const datos = obtenerDatosStorage();
+
+                diasSeleccionados.forEach(fecha => {
+                    if (nuevoTipo === '') {
+                        delete datos[fecha];
+                    } else {
+                        datos[fecha] = nuevoTipo;
+                    }
+                });
+
+                guardarDatosStorage(datos);
+                cargarDatos();
+                document.getElementById('btn-editar').click(); 
+            });
+        });
+
+        function actualizarContadores() {
+            let contadores = { festivo: 0, vacaciones: 0, permiso: 0, erte_colectivo: 0, erte_individual: 0, industrial: 0, curso: 0 };
+            const todosLosDias = document.querySelectorAll('.dia:not(.vacio)');
+            
+            todosLosDias.forEach(dia => {
+                if (dia.classList.contains('festivo')) {
+                    contadores.festivo++;
+                } else if (dia.classList.contains('vacaciones')) {
+                    contadores.vacaciones++;
+                } else if (dia.classList.contains('permiso')) {
+                    contadores.permiso++;
+                } else if (dia.classList.contains('erte_colectivo') || dia.classList.contains('erte')) {
+                    contadores.erte_colectivo++;
+                } else if (dia.classList.contains('erte_individual')) {
+                    contadores.erte_individual++;
+                } else if (dia.classList.contains('industrial')) {
+                    contadores.industrial++;
+                } else if (dia.classList.contains('curso')) {
+                    contadores.curso++;
+                } else if (dia.classList.contains('fin-semana')) {
+                    contadores.festivo++;
+                }
+            });
+
+            document.getElementById('count-festivo').innerText = contadores.festivo;
+            document.getElementById('count-vacaciones').innerText = contadores.vacaciones;
+            document.getElementById('count-permiso').innerText = contadores.permiso;
+            document.getElementById('count-erte-colectivo').innerText = contadores.erte_colectivo;
+            document.getElementById('count-erte-individual').innerText = contadores.erte_individual;
+            document.getElementById('count-industrial').innerText = contadores.industrial;
+            document.getElementById('count-curso').innerText = contadores.curso;
+        }
+
+        // Cargar Festivos
+        document.getElementById('btn-festivos').addEventListener('click', () => {
+            if (confirm(`¿Agregar festivos para ${anoActual}?`)) {
+                const festivos = [
+                    `${anoActual}-01-01`, `${anoActual}-01-06`, `${anoActual}-03-19`,
+                    `${anoActual}-05-01`, `${anoActual}-06-24`, `${anoActual}-08-15`,
+                    `${anoActual}-10-09`, `${anoActual}-10-12`, `${anoActual}-11-01`,
+                    `${anoActual}-12-06`, `${anoActual}-12-08`, `${anoActual}-12-25`
+                ];
+
+                const datos = obtenerDatosStorage();
+                festivos.forEach(fecha => { datos[fecha] = 'festivo'; });
+                guardarDatosStorage(datos);
+                cargarDatos();
+                alert('¡Festivos cargados!');
+            }
+        });
+
+        // Algoritmo para calcular el Domingo de Pascua
+        function obtenerDomingoPascua(year) {
+            const a = year % 19;
+            const b = Math.floor(year / 100);
+            const c = year % 100;
+            const d = Math.floor(b / 4);
+            const e = b % 4;
+            const f = Math.floor((b + 8) / 25);
+            const g = Math.floor((b - f + 1) / 3);
+            const h = (19 * a + b - d - g + 15) % 30;
+            const i = Math.floor(c / 4);
+            const k = c % 4;
+            const l = (32 + 2 * e + 2 * i - h - k) % 7;
+            const m = Math.floor((a + 11 * h + 22 * l) / 451);
+            const mes = Math.floor((h + l - 7 * m + 114) / 31) - 1;
+            const dia = ((h + l - 7 * m + 114) % 31) + 1;
+            return new Date(year, mes, dia);
+        }
+
+        // Cargar Vacaciones
+        document.getElementById('btn-vacaciones').addEventListener('click', () => {
+            if (confirm(`¿Cargar vacaciones de Pascua y Agosto para ${anoActual}?`)) {
+                const datos = obtenerDatosStorage();
+
+                const pascua = obtenerDomingoPascua(anoActual);
+                for (let i = 1; i <= 5; i++) {
+                    const d = new Date(pascua);
+                    d.setDate(pascua.getDate() + i);
+                    const mesStr = String(d.getMonth() + 1).padStart(2, '0');
+                    const diaStr = String(d.getDate()).padStart(2, '0');
+                    datos[`${anoActual}-${mesStr}-${diaStr}`] = 'vacaciones';
+                }
+
+                for (let dia = 1; dia <= 21; dia++) {
+                    const diaStr = String(dia).padStart(2, '0');
+                    datos[`${anoActual}-08-${diaStr}`] = 'vacaciones';
+                }
+
+                guardarDatosStorage(datos);
+                cargarDatos();
+                alert('¡Vacaciones cargadas!');
+            }
+        });
+
+        // Backup
+        document.getElementById('btn-exportar').addEventListener('click', () => {
+            const datos = obtenerDatosStorage();
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(datos, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `copia_calendario_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+        });
+
+        document.getElementById('btn-importar').addEventListener('click', () => {
+            document.getElementById('input-file-import').click();
+        });
+
+        document.getElementById('input-file-import').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const datos = JSON.parse(evt.target.result);
+                    guardarDatosStorage(datos);
+                    cargarDatos();
+                    alert("¡Copia de seguridad restaurada correctamente!");
+                } catch(err) {
+                    alert("El archivo seleccionado no es válido.");
+                }
+            };
+            reader.readAsText(file);
+        });
+
+        // Registro de Service Worker para PWA
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado con éxito', reg))
+                    .catch(err => console.log('Error al registrar Service Worker', err));
+            });
+        }
+
+        cargarDatos();
+    </script>
+</body>
+</html>
