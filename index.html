@@ -26,7 +26,7 @@
             background-color: #f4f7f6;
             margin: 0; 
             padding: 15px;
-            padding-bottom: 150px; /* Margen para que el panel inferior no tape el contenido */
+            padding-bottom: 150px; /* Margen para que el panel inferior no tape contenido */
             
             /* Apariencia de App Nativa */
             -webkit-user-select: none;
@@ -34,7 +34,7 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
-            overscroll-behavior-y: none; /* Bloquea el gesto de refresco al deslizar hacia abajo */
+            overscroll-behavior-y: none;
         }
 
         header { text-align: center; margin-bottom: 15px; }
@@ -102,6 +102,75 @@
             border-radius: 10px; border: 1px solid #ccc; font-weight: bold; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.08); background-color: #fff;
         }
+
+        /* === VENTANA MODAL FLOTANTE (INFO) === */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+
+        .modal-content {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            margin: 0; font-size: 1.2em; color: #2c3e50;
+        }
+
+        .btn-cerrar-modal {
+            background: #f0f0f0; border: none; font-size: 1.2em; 
+            font-weight: bold; color: #666; cursor: pointer; 
+            width: 32px; height: 32px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .btn-cerrar-modal:active { background: #ddd; }
+
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            font-size: 0.9em;
+            line-height: 1.5;
+            color: #333;
+            -webkit-user-select: text;
+            user-select: text;
+        }
+
+        .modal-body h3 {
+            font-size: 1em; margin-top: 15px; margin-bottom: 5px; color: #2c3e50;
+        }
+
+        .modal-body ul, .modal-body ol {
+            margin: 5px 0 10px 20px; padding: 0;
+        }
         
         /* === PANEL ACCIONES FIJO EN LA PARTE INFERIOR === */
         #panel-acciones {
@@ -138,6 +207,7 @@
         </div>
 
         <div class="controles">
+            <button id="btn-info" style="background-color: #f0f4f8;">ℹ️ Ayuda</button>
             <button id="btn-festivos" style="background-color: #e6f7ff;">🎉 Festivos</button>
             <button id="btn-vacaciones" style="background-color: #e6ffe6;">🟢 Vacaciones</button>
             <button id="btn-editar">✏️ Activar Edición</button>
@@ -159,6 +229,50 @@
     <main>
         <div id="contenedor-calendario"></div>
     </main>
+
+    <!-- VENTANA MODAL FLOTANTE DE INFORMACIÓN -->
+    <div id="modal-info" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>ℹ️ Guía de Uso</h2>
+                <button class="btn-cerrar-modal" id="btn-cerrar-info">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Esta app te permite llevar el control visual de tu calendario laboral de forma rápida y sencilla.</p>
+
+                <h3>📲 1. Instalación en el móvil</h3>
+                <ul>
+                    <li><strong>Android (Chrome):</strong> Pulsa abajo <em>"Añadir a la pantalla de inicio"</em> o entra en el menú (3 puntos) e <em>"Instalar aplicación"</em>.</li>
+                    <li><strong>iPhone (Safari):</strong> Pulsa el botón <em>Compartir</em> (cuadrado con flecha hacia arriba) y elige <em>"Añadir a la pantalla de inicio"</em>.</li>
+                </ul>
+
+                <h3>🔒 2. Privacidad y Seguridad</h3>
+                <ul>
+                    <li><strong>100% Privado:</strong> Tus días se guardan <strong>únicamente en la memoria de tu móvil</strong>.</li>
+                    <li>Cada usuario tiene su propio calendario en blanco totalmente independiente.</li>
+                    <li>Sin registros ni contraseñas.</li>
+                </ul>
+
+                <h3>✏️ 3. Marcar y editar días</h3>
+                <ol>
+                    <li>Pulsa el botón <strong>✏️ Activar Edición</strong>.</li>
+                    <li>Toca sobre los días que quieras marcar en el calendario.</li>
+                    <li>En la barra flotante inferior, selecciona la categoría correspondiente.</li>
+                    <li>Pulsa <strong>❌ Cancelar Edición</strong> para guardar la vista.</li>
+                </ol>
+
+                <h3>⚡ 4. Funciones útiles</h3>
+                <ul>
+                    <li><strong>🎉 Festivos:</strong> Carga automáticamente los festivos del año activo.</li>
+                    <li><strong>🟢 Vacaciones:</strong> Carga de golpe las vacaciones de Pascua y agosto.</li>
+                    <li><strong>Resumen superior:</strong> Contadores actualizados en tiempo real.</li>
+                </ul>
+
+                <h3>💾 5. Copia de Seguridad</h3>
+                <p>Usa los botones del final de la pantalla para <strong>Exportar</strong> o <strong>Importar</strong> tus datos guardados si cambias de teléfono.</p>
+            </div>
+        </div>
+    </div>
 
     <!-- PANEL FLOTANTE EN LA PARTE INFERIOR -->
     <div id="panel-acciones">
@@ -196,6 +310,17 @@
         function guardarDatosStorage(datosObj) {
             localStorage.setItem('mi_calendario_dias', JSON.stringify(datosObj));
         }
+
+        /* === GESTIÓN VENTANA MODAL INFO === */
+        const modalInfo = document.getElementById('modal-info');
+        const btnInfo = document.getElementById('btn-info');
+        const btnCerrarInfo = document.getElementById('btn-cerrar-info');
+
+        btnInfo.addEventListener('click', () => { modalInfo.style.display = 'flex'; });
+        btnCerrarInfo.addEventListener('click', () => { modalInfo.style.display = 'none'; });
+        window.addEventListener('click', (e) => {
+            if (e.target === modalInfo) modalInfo.style.display = 'none';
+        });
 
         document.getElementById('btn-ano-ant').addEventListener('click', () => {
             anoActual--;
