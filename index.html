@@ -481,6 +481,34 @@
             document.getElementById('count-curso').innerText = contadores.curso;
         }
 
+        // Cargar Festivos
+        document.getElementById('btn-festivos').addEventListener('click', () => {
+            if (confirm(`¿Agregar festivos para ${anoActual}?`)) {
+                const festivos = [
+                    `${anoActual}-01-01`, `${anoActual}-01-06`, `${anoActual}-03-19`,
+                    `${anoActual}-05-01`, `${anoActual}-06-24`, `${anoActual}-08-15`,
+                    `${anoActual}-10-09`, `${anoActual}-10-12`, `${anoActual}-11-01`,
+                    `${anoActual}-12-06`, `${anoActual}-12-08`, `${anoActual}-12-25`
+                ];
+
+                // --- NUEVO: Calcular y añadir el Viernes Santo ---
+                const pascua = obtenerDomingoPascua(anoActual);
+                const viernesSanto = new Date(pascua);
+                viernesSanto.setDate(pascua.getDate() - 2); // Restamos 2 días a Pascua
+                
+                const mesVS = String(viernesSanto.getMonth() + 1).padStart(2, '0');
+                const diaVS = String(viernesSanto.getDate()).padStart(2, '0');
+                festivos.push(`${viernesSanto.getFullYear()}-${mesVS}-${diaVS}`);
+                // -------------------------------------------------
+
+                const datos = obtenerDatosStorage();
+                festivos.forEach(fecha => { datos[fecha] = 'festivo'; });
+                guardarDatosStorage(datos);
+                cargarDatos();
+                alert('¡Festivos cargados!');
+            }
+        });
+
         // Algoritmo para calcular el Domingo de Pascua
         function obtenerDomingoPascua(year) {
             const a = year % 19;
@@ -499,42 +527,6 @@
             const dia = ((h + l - 7 * m + 114) % 31) + 1;
             return new Date(year, mes, dia);
         }
-
-        // Cargar Festivos
-        document.getElementById('btn-festivos').addEventListener('click', () => {
-            if (confirm(`¿Agregar festivos para ${anoActual}?`)) {
-                const festivos = [
-                    `${anoActual}-01-01`, `${anoActual}-01-06`, `${anoActual}-03-19`,
-                    `${anoActual}-05-01`, `${anoActual}-06-24`, `${anoActual}-08-15`,
-                    `${anoActual}-10-09`, `${anoActual}-10-12`, `${anoActual}-11-01`,
-                    `${anoActual}-12-06`, `${anoActual}-12-08`, `${anoActual}-12-25`
-                ];
-
-                // Función auxiliar para formatear fechas a YYYY-MM-DD
-                const formatearFecha = (d) => {
-                    const m = String(d.getMonth() + 1).padStart(2, '0');
-                    const day = String(d.getDate()).padStart(2, '0');
-                    return `${d.getFullYear()}-${m}-${day}`;
-                };
-
-                // Calcular Domingo de Pascua y añadir Viernes Santo (-2 días) y Lunes de Pascua (+1 día)
-                const pascua = obtenerDomingoPascua(anoActual);
-                
-                const viernesSanto = new Date(pascua);
-                viernesSanto.setDate(pascua.getDate() - 2);
-                festivos.push(formatearFecha(viernesSanto));
-
-                const lunesPascua = new Date(pascua);
-                lunesPascua.setDate(pascua.getDate() + 1);
-                festivos.push(formatearFecha(lunesPascua));
-
-                const datos = obtenerDatosStorage();
-                festivos.forEach(fecha => { datos[fecha] = 'festivo'; });
-                guardarDatosStorage(datos);
-                cargarDatos();
-                alert('¡Festivos (incluyendo Viernes Santo y Lunes de Pascua) cargados!');
-            }
-        });
 
         // Cargar Vacaciones
         document.getElementById('btn-vacaciones').addEventListener('click', () => {
