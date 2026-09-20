@@ -7,6 +7,7 @@
     
     <!-- Configuración PWA y Móvil -->
     <link rel="manifest" href="manifest.json">
+    <link rel="icon" href="data:,"> <!-- Esto quita el error 404 del favicon -->
     <meta name="theme-color" content="#f4f7f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -103,6 +104,14 @@
             transform: scale(1.12); z-index: 10; box-shadow: 0px 4px 8px rgba(0,0,0,0.25);
         }
         .dia.fin-semana { background-color: #ffe6e6; color: #cc0000; font-weight: bold; }
+
+        /* === DÍA ACTUAL (HOY) === */
+        .dia.hoy {
+            outline: 3px solid #2c3e50; 
+            outline-offset: -2px; 
+            font-weight: 900;
+            z-index: 5;
+        }
 
         /* === COLORES DE ESTADOS === */
         .dia.festivo { background-color: #ff0000 !important; color: white !important; font-weight: bold !important; }
@@ -236,6 +245,9 @@
 
         let modoEdicion = false;
         let diasSeleccionados = new Set();
+        
+        // Control para hacer scroll automático solo al abrir la app la primera vez
+        let esPrimeraCarga = true; 
 
         const selectorTurno = document.getElementById('selector-turno');
         const turnoGuardado = localStorage.getItem('mi_calendario_turno') || 'B';
@@ -334,21 +346,17 @@
                     if (!datos[fecha]) { datos[fecha] = {tipo: 'vacaciones', extra: 0}; seModifico = true; }
                 }
 
-                // NUEVA LÓGICA VACACIONES AGOSTO
                 let fechaVerano = new Date(ano, 7, 1); 
                 let diaSemana = fechaVerano.getDay();
                 
                 if (diaSemana === 5 || diaSemana === 6 || diaSemana === 0) {
-                    // Viernes (5), Sábado (6) o Domingo (0) -> Salta al siguiente lunes
                     let diasParaLunes = (diaSemana === 0) ? 1 : 8 - diaSemana;
                     fechaVerano.setDate(fechaVerano.getDate() + diasParaLunes);
                 } else {
-                    // L, M, X, J -> Retrocede al lunes de esta semana
                     let diasParaLunes = 1 - diaSemana;
                     fechaVerano.setDate(fechaVerano.getDate() + diasParaLunes);
                 }
                 
-                // Marca exactamente 21 días (3 semanas), solo de L-V
                 for (let i = 0; i < 21; i++) {
                     let diaActualSemana = fechaVerano.getDay();
                     if (diaActualSemana !== 0 && diaActualSemana !== 6) {
@@ -367,12 +375,27 @@
             cargarFestivosYVacacionesAutomatico(anoActual);
             dibujarCalendario(anoActual);
             actualizarContadores();
+            
+            // Lógica de Scroll Automático al día de hoy
+            if (esPrimeraCarga && anoActual === new Date().getFullYear()) {
+                setTimeout(() => {
+                    const diaActual = document.getElementById('dia-actual');
+                    if (diaActual) {
+                        diaActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                }, 300); 
+                esPrimeraCarga = false; 
+            }
         }
 
         function dibujarCalendario(ano) {
             const contenedor = document.getElementById('contenedor-calendario');
             contenedor.innerHTML = ''; 
             const todosLosDatos = obtenerDatosStorage();
+            
+            // Fecha de hoy en formato AAAA-MM-DD para compararla
+            const fechaHoyObj = new Date();
+            const strHoy = `${fechaHoyObj.getFullYear()}-${String(fechaHoyObj.getMonth() + 1).padStart(2, '0')}-${String(fechaHoyObj.getDate()).padStart(2, '0')}`;
 
             for (let mes = 0; mes < 12; mes++) {
                 const divMes = document.createElement('div');
@@ -406,9 +429,14 @@
                     let turnoLetra = obtenerTurnoDia(fechaParaDiaSemana);
                     let htmlTurno = `<span class="turno-badge">${turnoLetra}</span>`;
                     let htmlHoras = objData.extra > 0 ? `<span class="horas-badge">+${objData.extra}h</span>` : '';
+                    
+                    // Comprobar si el día que estamos dibujando es HOY
+                    let esHoy = (fechaMySQL === strHoy);
+                    let claseHoy = esHoy ? 'hoy' : '';
+                    let idHoy = esHoy ? 'id="dia-actual"' : '';
 
                     divGrid.innerHTML += `
-                        <div class="dia ${claseTipo} ${claseFinSemana}" data-fecha="${fechaMySQL}" data-mes="${mesStr}" onclick="manejarClickDia(this)">
+                        <div ${idHoy} class="dia ${claseTipo} ${claseFinSemana} ${claseHoy}" data-fecha="${fechaMySQL}" data-mes="${mesStr}" onclick="manejarClickDia(this)">
                             ${htmlTurno}
                             <span style="display:block; margin-top:2px;">${dia}</span>
                             ${htmlHoras}
