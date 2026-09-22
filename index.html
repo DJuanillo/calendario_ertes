@@ -7,7 +7,7 @@
     
     <!-- Configuración PWA y Móvil -->
     <link rel="manifest" href="manifest.json">
-    <link rel="icon" href="data:,"> <!-- Esto quita el error 404 del favicon -->
+    <link rel="icon" href="data:,">
     <meta name="theme-color" content="#f4f7f6">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -75,7 +75,23 @@
         .resumen-top li {
             background: #fdfdfd; border: 1px solid #eaeaea; padding: 6px 10px;
             border-radius: 20px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex; align-items: center;
         }
+
+        /* === PUNTOS DE COLOR PARA LEYENDAS === */
+        .leg-dot { 
+            display: inline-block; width: 12px; height: 12px; border-radius: 50%; 
+            border: 1px solid rgba(0,0,0,0.2); margin-right: 5px; flex-shrink: 0;
+        }
+        .bg-festivo { background-color: #ff0000; }
+        .bg-vacaciones { background-color: #00ff00; }
+        .bg-permiso { background-color: #00ffff; }
+        .bg-erte-c { background-color: #3d6cb9; }
+        .bg-erte-i { background-color: #ffff00; }
+        .bg-ind { background-color: #38761d; }
+        .bg-curso { background-color: #f39200; }
+        .bg-lib-s { background-color: #d8b4e2; }
+        .bg-sab-p { background-color: #d35400; }
 
         #contenedor-calendario {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;
@@ -98,6 +114,9 @@
 
         .turno-badge { position: absolute; top: 2px; left: 4px; font-size: 0.65em; font-weight: bold; color: #666; }
         .horas-badge { position: absolute; bottom: 1px; right: 2px; font-size: 0.7em; color: #c0392b; font-weight: bold; background: rgba(255,255,255,0.7); padding: 0 2px; border-radius: 3px; }
+        
+        /* === INDICADOR DE PAGO (5º DÍA) === */
+        .pago-badge { position: absolute; bottom: 1px; left: 4px; font-size: 0.85em; color: #27ae60; font-weight: 900; }
 
         .dia.seleccionado {
             outline: 3px solid #000; outline-offset: -2px;
@@ -132,6 +151,7 @@
         .badge-mes {
             background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.72em;
             padding: 3px 6px; border-radius: 4px; color: #495057; font-weight: bold;
+            display: flex; align-items: center;
         }
 
         /* === PANEL ACCIONES FIJO EN LA PARTE INFERIOR === */
@@ -158,9 +178,6 @@
             box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: background 0.2s;
         }
         #btn-guardar-panel:active { background-color: #1a252f; transform: scale(0.98); }
-
-        .footer-backup { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
-        .footer-backup button { padding: 8px 12px; font-size: 0.85em; cursor: pointer; border-radius: 6px; border: 1px solid #aaa; background: #fff; margin: 4px; }
     </style>
 </head>
 <body>
@@ -191,16 +208,16 @@
     <div class="resumen-top">
         <p>📊 Resumen Anual</p>
         <ul>
-            <li>🔴 Festivos: <strong id="count-festivo">0</strong></li>
-            <li>🟢 Vacaciones: <strong id="count-vacaciones">0</strong></li>
-            <li>🔵 D. Personal: <strong id="count-permiso">0</strong></li>
-            <li>🔷 ERTE T: <strong id="count-erte-colectivo">0</strong></li>
-            <li>🟡 ERTE I: <strong id="count-erte-individual">0</strong></li>
-            <li>🌲 J. Ind: <strong id="count-industrial">0</strong></li>
-            <li>🟠 Cursos: <strong id="count-curso">0</strong></li>
-            <li>🟣 Libre Sáb: <strong id="count-libre-sabado">0</strong></li>
-            <li>🟧 Sáb. Prod: <strong id="count-sabado-prod">0</strong></li>
-            <li style="background: #fff3cd; border-color: #ffeeba;">⏱️ H. Extra: <strong id="count-horas">0</strong>h</li>
+            <li><span class="leg-dot bg-festivo"></span>Festivos:&nbsp;<strong id="count-festivo">0</strong></li>
+            <li><span class="leg-dot bg-vacaciones"></span>Vacaciones:&nbsp;<strong id="count-vacaciones">0</strong></li>
+            <li><span class="leg-dot bg-permiso"></span>D. Personal:&nbsp;<strong id="count-permiso">0</strong></li>
+            <li><span class="leg-dot bg-erte-c"></span>ERTE T:&nbsp;<strong id="count-erte-colectivo">0</strong></li>
+            <li><span class="leg-dot bg-erte-i"></span>ERTE I:&nbsp;<strong id="count-erte-individual">0</strong></li>
+            <li><span class="leg-dot bg-ind"></span>J. Ind:&nbsp;<strong id="count-industrial">0</strong></li>
+            <li><span class="leg-dot bg-curso"></span>Cursos:&nbsp;<strong id="count-curso">0</strong></li>
+            <li><span class="leg-dot bg-lib-s"></span>Libre Sáb:&nbsp;<strong id="count-libre-sabado">0</strong></li>
+            <li><span class="leg-dot bg-sab-p"></span>Sáb. Prod:&nbsp;<strong id="count-sabado-prod">0</strong></li>
+            <li style="background: #fff3cd; border-color: #ffeeba;">⏱️ H. Extra:&nbsp;<strong id="count-horas">0</strong>h</li>
         </ul>
     </div>
 
@@ -393,7 +410,6 @@
             contenedor.innerHTML = ''; 
             const todosLosDatos = obtenerDatosStorage();
             
-            // Fecha de hoy en formato AAAA-MM-DD para compararla
             const fechaHoyObj = new Date();
             const strHoy = `${fechaHoyObj.getFullYear()}-${String(fechaHoyObj.getMonth() + 1).padStart(2, '0')}-${String(fechaHoyObj.getDate()).padStart(2, '0')}`;
 
@@ -413,6 +429,28 @@
 
                 for (let i = 0; i < primerDia; i++) divGrid.innerHTML += `<div class="vacio"></div>`;
 
+                // --- CALCULAR EL DÍA DE PAGO (5º Día Laborable) ---
+                let diaPagoDelMes = 0;
+                let laborables = 0;
+                for (let d = 1; d <= diasEnMes; d++) {
+                    let mStr = String(mes + 1).padStart(2, '0');
+                    let dStr = String(d).padStart(2, '0');
+                    let fMySQL = `${ano}-${mStr}-${dStr}`;
+                    let fDia = new Date(ano, mes, d).getDay();
+                    
+                    let esFinde = (fDia === 0 || fDia === 6);
+                    let esFestivo = (todosLosDatos[fMySQL] && todosLosDatos[fMySQL].tipo === 'festivo');
+                    
+                    if (!esFinde && !esFestivo) {
+                        laborables++;
+                        if (laborables === 5) {
+                            diaPagoDelMes = d;
+                            break;
+                        }
+                    }
+                }
+                // ----------------------------------------------------
+
                 for (let dia = 1; dia <= diasEnMes; dia++) {
                     const mesStr = String(mes + 1).padStart(2, '0');
                     const diaStr = String(dia).padStart(2, '0');
@@ -430,7 +468,9 @@
                     let htmlTurno = `<span class="turno-badge">${turnoLetra}</span>`;
                     let htmlHoras = objData.extra > 0 ? `<span class="horas-badge">+${objData.extra}h</span>` : '';
                     
-                    // Comprobar si el día que estamos dibujando es HOY
+                    // --- SÍMBOLO DE PAGO ---
+                    let htmlPago = (dia === diaPagoDelMes) ? `<span class="pago-badge">€</span>` : '';
+                    
                     let esHoy = (fechaMySQL === strHoy);
                     let claseHoy = esHoy ? 'hoy' : '';
                     let idHoy = esHoy ? 'id="dia-actual"' : '';
@@ -440,12 +480,12 @@
                             ${htmlTurno}
                             <span style="display:block; margin-top:2px;">${dia}</span>
                             ${htmlHoras}
+                            ${htmlPago}
                         </div>`;
                 }
                 
                 divMes.appendChild(divGrid);
 
-                // Contenedor para el resumen mensual en la tarjeta de cada mes
                 const divResumenMes = document.createElement('div');
                 divResumenMes.className = 'resumen-mes';
                 divResumenMes.id = `resumen-mes-${String(mes + 1).padStart(2, '0')}`;
@@ -559,7 +599,6 @@
                 mensuales[mes].horas += hExtra;
             });
 
-            // Resumen Anual Arriba
             document.getElementById('count-festivo').innerText = anuales.festivo;
             document.getElementById('count-vacaciones').innerText = anuales.vacaciones;
             document.getElementById('count-permiso').innerText = anuales.permiso;
@@ -571,22 +610,21 @@
             document.getElementById('count-sabado-prod').innerText = anuales.sabado_produccion;
             document.getElementById('count-horas').innerText = anuales.horas;
 
-            // Resumenes Mensuales Abajo de cada mes (Solo muestra los que son mayores a 0)
             for(let i=1; i<=12; i++) {
                 let m = String(i).padStart(2, '0');
                 let cm = mensuales[m];
                 let divResumen = document.getElementById(`resumen-mes-${m}`);
                 if (divResumen) {
                     let html = [];
-                    if (cm.festivo > 0) html.push(`🔴 Fes: ${cm.festivo}`);
-                    if (cm.vacaciones > 0) html.push(`🟢 Vac: ${cm.vacaciones}`);
-                    if (cm.permiso > 0) html.push(`🔵 Per: ${cm.permiso}`);
-                    if (cm.erte_colectivo > 0) html.push(`🔷 ERT.T: ${cm.erte_colectivo}`);
-                    if (cm.erte_individual > 0) html.push(`🟡 ERT.I: ${cm.erte_individual}`);
-                    if (cm.industrial > 0) html.push(`🌲 J.Ind: ${cm.industrial}`);
-                    if (cm.curso > 0) html.push(`🟠 Cur: ${cm.curso}`);
-                    if (cm.libre_sabado > 0) html.push(`🟣 L.Sáb: ${cm.libre_sabado}`);
-                    if (cm.sabado_produccion > 0) html.push(`🟧 S.Prd: ${cm.sabado_produccion}`);
+                    if (cm.festivo > 0) html.push(`<span class="leg-dot bg-festivo"></span>Fes: ${cm.festivo}`);
+                    if (cm.vacaciones > 0) html.push(`<span class="leg-dot bg-vacaciones"></span>Vac: ${cm.vacaciones}`);
+                    if (cm.permiso > 0) html.push(`<span class="leg-dot bg-permiso"></span>Per: ${cm.permiso}`);
+                    if (cm.erte_colectivo > 0) html.push(`<span class="leg-dot bg-erte-c"></span>ERT.T: ${cm.erte_colectivo}`);
+                    if (cm.erte_individual > 0) html.push(`<span class="leg-dot bg-erte-i"></span>ERT.I: ${cm.erte_individual}`);
+                    if (cm.industrial > 0) html.push(`<span class="leg-dot bg-ind"></span>J.Ind: ${cm.industrial}`);
+                    if (cm.curso > 0) html.push(`<span class="leg-dot bg-curso"></span>Cur: ${cm.curso}`);
+                    if (cm.libre_sabado > 0) html.push(`<span class="leg-dot bg-lib-s"></span>L.Sáb: ${cm.libre_sabado}`);
+                    if (cm.sabado_produccion > 0) html.push(`<span class="leg-dot bg-sab-p"></span>S.Prd: ${cm.sabado_produccion}`);
                     if (cm.horas > 0) html.push(`⏱️ Ex: ${cm.horas}h`);
 
                     if (html.length === 0) {
