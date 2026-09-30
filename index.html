@@ -24,8 +24,10 @@
         #display-ano { font-size: 2em; font-weight: bold; color: #2c3e50; min-width: 100px; }
         .selector-turno-container { margin-bottom: 10px; font-weight: bold; color: #2c3e50; }
         #selector-turno { padding: 6px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; font-size: 1em; }
+        
         .controles-sticky { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px 5px; position: sticky; top: 0; z-index: 900; background: rgba(244, 247, 246, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1); }
         .controles-sticky button { padding: 10px 15px; font-size: 0.95em; cursor: pointer; border-radius: 10px; border: 1px solid #ccc; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.08); background-color: #fff; }
+        
         .resumen-top { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .resumen-top p { text-align: center; font-weight: bold; margin: 0 0 10px 0; font-size: 0.95em; color: #2c3e50; }
         .resumen-top ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.85em; }
@@ -85,12 +87,15 @@
         .footer-backup { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
         .footer-backup button { padding: 8px 12px; font-size: 0.85em; cursor: pointer; border-radius: 6px; border: 1px solid #aaa; background: #fff; margin: 4px; }
 
-        /* Estilo para el Modal/Bocadillo de Notas */
-        #modal-nota { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        /* Estilo para los Modales */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
         .modal-contenido { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .modal-contenido h3 { margin-top: 0; color: #2c3e50; }
         .modal-contenido p { font-size: 1.1em; margin-bottom: 20px; color: #333; }
         .modal-contenido button { padding: 10px 20px; font-weight: bold; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        
+        .modal-ayuda-contenido { max-width: 500px; max-height: 80vh; display: flex; flex-direction: column; }
+        #texto-ayuda { overflow-y: auto; text-align: left; font-size: 0.9em; line-height: 1.5; color: #333; white-space: pre-wrap; margin-bottom: 15px; padding-right: 5px; }
     </style>
 </head>
 <body>
@@ -115,6 +120,7 @@
 
     <div class="controles-sticky">
         <button id="btn-editar">✏️ Activar Edición</button>
+        <button id="btn-ayuda" style="background-color: #f0f4f8; color: #2c3e50;">❓ Ayuda</button>
     </div>
 
     <div class="resumen-top">
@@ -169,11 +175,22 @@
     </div>
 
     <!-- MODAL/BOCADILLO PARA VER LAS NOTAS -->
-    <div id="modal-nota">
+    <div id="modal-nota" class="modal-overlay">
         <div class="modal-contenido">
             <h3 id="modal-fecha">Fecha</h3>
             <p id="modal-texto"></p>
             <button onclick="document.getElementById('modal-nota').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+
+    <!-- MODAL PARA VER EL README (AYUDA) -->
+    <div id="modal-ayuda" class="modal-overlay">
+        <div class="modal-contenido modal-ayuda-contenido">
+            <h3>📖 Ayuda y Uso</h3>
+            <div id="texto-ayuda">Cargando instrucciones...</div>
+            <div>
+                <button onclick="document.getElementById('modal-ayuda').style.display='none'">Cerrar</button>
+            </div>
         </div>
     </div>
 
@@ -314,7 +331,9 @@
             if (esPrimeraCarga && anoActual === new Date().getFullYear()) {
                 setTimeout(() => {
                     const diaActual = document.getElementById('dia-actual');
-                    if (diaActual) diaActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    if (diaActual) {
+                        diaActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
                 }, 300); 
                 esPrimeraCarga = false; 
             }
@@ -349,11 +368,16 @@
                     let dStr = String(d).padStart(2, '0');
                     let fMySQL = `${ano}-${mStr}-${dStr}`;
                     let fDia = new Date(ano, mes, d).getDay();
+                    
                     let esFinde = (fDia === 0 || fDia === 6);
                     let esFestivo = (todosLosDatos[fMySQL] && todosLosDatos[fMySQL].tipo === 'festivo');
+                    
                     if (!esFinde && !esFestivo) {
                         laborables++;
-                        if (laborables === 5) { diaPagoDelMes = d; break; }
+                        if (laborables === 5) {
+                            diaPagoDelMes = d;
+                            break;
+                        }
                     }
                 }
 
@@ -579,6 +603,19 @@
                 }
             };
             reader.readAsText(file);
+        });
+
+        // FUNCIÓN PARA CARGAR EL README AL PULSAR EL BOTÓN DE AYUDA
+        document.getElementById('btn-ayuda').addEventListener('click', async () => {
+            try {
+                const res = await fetch('README.md');
+                if (!res.ok) throw new Error('No se encontró el archivo README.md');
+                let texto = await res.text();
+                document.getElementById('texto-ayuda').innerText = texto;
+                document.getElementById('modal-ayuda').style.display = 'flex';
+            } catch (e) {
+                alert('No se pudo cargar la ayuda: ' + e.message);
+            }
         });
 
         if ('serviceWorker' in navigator) {
