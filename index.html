@@ -605,13 +605,36 @@
             reader.readAsText(file);
         });
 
+        // PEQUEÑO TRADUCTOR DE MARKDOWN A HTML VISUAL
+        function formatearMarkdown(texto) {
+            return texto
+                // Títulos principales (#)
+                .replace(/^# (.*$)/gim, '<h2 style="color:#2c3e50; margin-top:0;">$1</h2>')
+                // Subtítulos (##)
+                .replace(/^## (.*$)/gim, '<h3 style="color:#2c3e50; border-bottom:1px solid #ccc; padding-bottom:5px; margin-top:20px;">$1</h3>')
+                // Listas con viñetas (* )
+                .replace(/^\* (.*$)/gim, '<div style="margin-left:15px; margin-bottom:8px;">• $1</div>')
+                // Listas numéricas (1. )
+                .replace(/^(\d+)\. (.*$)/gim, '<div style="margin-left:15px; margin-bottom:8px;"><strong>$1.</strong> $2</div>')
+                // Negritas (**texto**)
+                .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+                // Código (`texto`)
+                .replace(/`(.*?)`/gim, '<code style="background:#eee; padding:2px 4px; border-radius:4px; font-size:0.9em;">$1</code>')
+                // Citas blockquote (> texto)
+                .replace(/^\> (.*$)/gim, '<blockquote style="border-left: 4px solid #ccc; padding-left: 10px; margin-left: 0; color: #666;">$1</blockquote>')
+                // Separación de párrafos dobles
+                .replace(/\n\n/gim, '<br><br>');
+        }
+
         // FUNCIÓN PARA CARGAR EL README AL PULSAR EL BOTÓN DE AYUDA
         document.getElementById('btn-ayuda').addEventListener('click', async () => {
             try {
                 const res = await fetch('README.md');
                 if (!res.ok) throw new Error('No se encontró el archivo README.md');
                 let texto = await res.text();
-                document.getElementById('texto-ayuda').innerText = texto;
+                
+                // Usamos innerHTML en lugar de innerText para que dibuje el HTML formateado
+                document.getElementById('texto-ayuda').innerHTML = formatearMarkdown(texto);
                 document.getElementById('modal-ayuda').style.display = 'flex';
             } catch (e) {
                 alert('No se pudo cargar la ayuda: ' + e.message);
