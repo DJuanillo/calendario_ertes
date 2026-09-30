@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Calendario Laboral</title>
     
-    <!-- Configuración PWA y Móvil -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="data:,">
     <meta name="theme-color" content="#f4f7f6">
@@ -16,123 +15,51 @@
     <link rel="apple-touch-icon" href="icono-192.png">
 
     <style>
-        * {
-            -webkit-tap-highlight-color: transparent;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f4f7f6;
-            margin: 0; 
-            padding: 15px;
-            padding-bottom: 250px; 
-            -webkit-user-select: none;
-            user-select: none;
-            overscroll-behavior-y: none;
-        }
-
+        * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f4f7f6; margin: 0; padding: 15px; padding-bottom: 250px; -webkit-user-select: none; user-select: none; overscroll-behavior-y: none; }
         header { text-align: center; margin-bottom: 15px; }
-        
-        .navegacion-ano {
-            display: flex; align-items: center; justify-content: center; gap: 20px; margin: 15px 0;
-        }
-        .navegacion-ano button {
-            background-color: #fff; border: 1px solid #ccc; border-radius: 50%; width: 45px; height: 45px;
-            font-size: 1.2em; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333;
-        }
+        .navegacion-ano { display: flex; align-items: center; justify-content: center; gap: 20px; margin: 15px 0; }
+        .navegacion-ano button { background-color: #fff; border: 1px solid #ccc; border-radius: 50%; width: 45px; height: 45px; font-size: 1.2em; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); color: #333; }
         .navegacion-ano button:active { background-color: #e0e0e0; }
         #display-ano { font-size: 2em; font-weight: bold; color: #2c3e50; min-width: 100px; }
-
         .selector-turno-container { margin-bottom: 10px; font-weight: bold; color: #2c3e50; }
         #selector-turno { padding: 6px; border-radius: 8px; border: 1px solid #ccc; font-weight: bold; font-size: 1em; }
-
-        .controles-sticky { 
-            display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; 
-            margin-bottom: 15px; padding: 10px 5px;
-            position: sticky; top: 0; z-index: 900;
-            background: rgba(244, 247, 246, 0.95);
-            backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1);
-        }
-        .controles-sticky button { 
-            padding: 10px 15px; font-size: 0.95em; cursor: pointer; 
-            border-radius: 10px; border: 1px solid #ccc; font-weight: bold; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.08); background-color: #fff;
-        }
-
-        .resumen-top {
-            background: #fff; padding: 15px; border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px;
-        }
+        .controles-sticky { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 15px; padding: 10px 5px; position: sticky; top: 0; z-index: 900; background: rgba(244, 247, 246, 0.95); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(0,0,0,0.05); box-shadow: 0 4px 6px -4px rgba(0,0,0,0.1); }
+        .controles-sticky button { padding: 10px 15px; font-size: 0.95em; cursor: pointer; border-radius: 10px; border: 1px solid #ccc; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.08); background-color: #fff; }
+        .resumen-top { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.08); margin-bottom: 20px; }
         .resumen-top p { text-align: center; font-weight: bold; margin: 0 0 10px 0; font-size: 0.95em; color: #2c3e50; }
-        .resumen-top ul {
-            list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; 
-            justify-content: center; gap: 8px; font-size: 0.85em;
-        }
-        .resumen-top li {
-            background: #fdfdfd; border: 1px solid #eaeaea; padding: 6px 10px;
-            border-radius: 20px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-            display: flex; align-items: center;
-        }
+        .resumen-top ul { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; font-size: 0.85em; }
+        .resumen-top li { background: #fdfdfd; border: 1px solid #eaeaea; padding: 6px 10px; border-radius: 20px; white-space: nowrap; box-shadow: 0 1px 3px rgba(0,0,0,0.04); display: flex; align-items: center; }
+        
+        .leg-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.2); margin-right: 5px; flex-shrink: 0; }
+        .bg-festivo { background-color: #ff0000; } 
+        .bg-vacaciones { background-color: #00ff00; } 
+        .bg-permiso { background-color: #00ffff; } 
+        .bg-erte-c { background-color: #3d6cb9; } 
+        .bg-erte-i { background-color: #ffff00; } 
+        .bg-ind { background-color: #38761d; } 
+        .bg-curso { background-color: #f39200; } 
+        .bg-lib-s { background-color: #d8b4e2; } 
+        .bg-sab-p { background-color: #d35400; } 
+        .bg-otros { background-color: #555555; } 
 
-        /* === PUNTOS DE COLOR PARA LEYENDAS === */
-        .leg-dot { 
-            display: inline-block; width: 12px; height: 12px; border-radius: 50%; 
-            border: 1px solid rgba(0,0,0,0.2); margin-right: 5px; flex-shrink: 0;
-        }
-        .bg-festivo { background-color: #ff0000; }
-        .bg-vacaciones { background-color: #00ff00; }
-        .bg-permiso { background-color: #00ffff; }
-        .bg-erte-c { background-color: #3d6cb9; }
-        .bg-erte-i { background-color: #ffff00; }
-        .bg-ind { background-color: #38761d; }
-        .bg-curso { background-color: #f39200; }
-        .bg-lib-s { background-color: #d8b4e2; }
-        .bg-sab-p { background-color: #d35400; }
-
-        #contenedor-calendario {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px;
-        }
-        .mes {
-            background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            display: flex; flex-direction: column;
-        }
+        #contenedor-calendario { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 15px; }
+        .mes { background: #fff; padding: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); display: flex; flex-direction: column; }
         .mes h3 { text-align: center; margin-top: 0; text-transform: uppercase; font-size: 1.1em; color: #2c3e50; }
-
-        .dias-grid {
-            display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; flex-grow: 1;
-        }
+        .dias-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; text-align: center; flex-grow: 1; }
         .dia-semana { font-weight: bold; font-size: 0.8em; color: #777; margin-bottom: 5px; }
-        .dia {
-            position: relative; padding: 12px 0; border: 1px solid #eee; border-radius: 6px; 
-            cursor: pointer; font-size: 0.9em; transition: transform 0.05s, border-color 0.1s;
-        }
+        .dia { position: relative; padding: 12px 0; border: 1px solid #eee; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: transform 0.05s, border-color 0.1s; }
         .vacio { border: none; background: transparent; cursor: default; }
-
+        
         .turno-badge { position: absolute; top: 2px; left: 4px; font-size: 0.65em; font-weight: bold; color: #666; }
         .horas-badge { position: absolute; bottom: 1px; right: 2px; font-size: 0.7em; color: #c0392b; font-weight: bold; background: rgba(255,255,255,0.7); padding: 0 2px; border-radius: 3px; }
-        
-        /* === INDICADOR DE PAGO (5º DÍA) === */
         .pago-badge { position: absolute; bottom: 1px; left: 4px; font-size: 0.85em; color: #27ae60; font-weight: 900; }
+        .nota-badge { position: absolute; top: 0px; right: 2px; font-size: 0.9em; }
 
-        .dia.seleccionado {
-            outline: 3px solid #000; outline-offset: -2px;
-            transform: scale(1.12); z-index: 10; box-shadow: 0px 4px 8px rgba(0,0,0,0.25);
-        }
+        .dia.seleccionado { outline: 3px solid #000; outline-offset: -2px; transform: scale(1.12); z-index: 10; box-shadow: 0px 4px 8px rgba(0,0,0,0.25); }
         .dia.fin-semana { background-color: #ffe6e6; color: #cc0000; font-weight: bold; }
-
-        /* === DÍA ACTUAL (HOY) === */
-        .dia.hoy {
-            outline: 3px solid #2c3e50; 
-            outline-offset: -2px; 
-            font-weight: 900;
-            z-index: 5;
-        }
-
-        /* === COLORES DE ESTADOS === */
+        .dia.hoy { outline: 3px solid #2c3e50; outline-offset: -2px; font-weight: 900; z-index: 5; }
+        
         .dia.festivo { background-color: #ff0000 !important; color: white !important; font-weight: bold !important; }
         .dia.vacaciones { background-color: #00ff00 !important; color: black !important; font-weight: normal !important; }
         .dia.permiso { background-color: #00ffff !important; color: black !important; font-weight: normal !important; }
@@ -142,42 +69,28 @@
         .dia.curso { background-color: #f39200 !important; color: black !important; font-weight: normal !important; }
         .dia.libre_sabado { background-color: #d8b4e2 !important; color: black !important; font-weight: normal !important; }
         .dia.sabado_produccion { background-color: #d35400 !important; color: white !important; font-weight: normal !important; }
+        .dia.otros { background-color: #555555 !important; color: white !important; font-weight: normal !important; }
 
-        /* === RESUMEN MENSUAL EN CADA MES === */
-        .resumen-mes {
-            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee;
-            display: flex; flex-wrap: wrap; gap: 4px; justify-content: center;
-        }
-        .badge-mes {
-            background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.72em;
-            padding: 3px 6px; border-radius: 4px; color: #495057; font-weight: bold;
-            display: flex; align-items: center;
-        }
-
-        /* === PANEL ACCIONES FIJO EN LA PARTE INFERIOR === */
-        #panel-acciones {
-            display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
-            padding: 12px 10px 25px 10px; background: rgba(255, 255, 255, 0.98);
-            backdrop-filter: blur(10px); border-top: 2px solid #ddd;
-            border-radius: 18px 18px 0 0; box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-
-        .btn-accion {
-            border: 1px solid #aaa; padding: 10px 12px; margin: 3px; 
-            border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8em;
-        }
+        .resumen-mes { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #eee; display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; }
+        .badge-mes { background: #f8f9fa; border: 1px solid #e9ecef; font-size: 0.72em; padding: 3px 6px; border-radius: 4px; color: #495057; font-weight: bold; display: flex; align-items: center; }
         
+        #panel-acciones { display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999; padding: 12px 10px 25px 10px; background: rgba(255, 255, 255, 0.98); backdrop-filter: blur(10px); border-top: 2px solid #ddd; border-radius: 18px 18px 0 0; box-shadow: 0 -4px 25px rgba(0, 0, 0, 0.2); text-align: center; }
+        .btn-accion { border: 1px solid #aaa; padding: 10px 12px; margin: 3px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 0.8em; }
         .horas-container { margin-top: 10px; padding-top: 10px; border-top: 1px dashed #ccc; display: flex; justify-content: center; align-items: center; gap: 10px;}
         .horas-container input { width: 80px; padding: 10px; border-radius: 8px; border: 1px solid #aaa; text-align: center; font-weight: bold;}
-
-        #btn-guardar-panel {
-            width: 90%; max-width: 400px; padding: 14px; margin-top: 15px;
-            font-size: 1.1em; font-weight: bold; background-color: #2c3e50;
-            color: white; border: none; border-radius: 12px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: background 0.2s;
-        }
+        
+        #btn-guardar-panel { width: 90%; max-width: 400px; padding: 14px; margin-top: 15px; font-size: 1.1em; font-weight: bold; background-color: #2c3e50; color: white; border: none; border-radius: 12px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: background 0.2s; }
         #btn-guardar-panel:active { background-color: #1a252f; transform: scale(0.98); }
+
+        .footer-backup { margin-top: 30px; text-align: center; border-top: 1px solid #ddd; padding-top: 15px; }
+        .footer-backup button { padding: 8px 12px; font-size: 0.85em; cursor: pointer; border-radius: 6px; border: 1px solid #aaa; background: #fff; margin: 4px; }
+
+        /* Estilo para el Modal/Bocadillo de Notas */
+        #modal-nota { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
+        .modal-contenido { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .modal-contenido h3 { margin-top: 0; color: #2c3e50; }
+        .modal-contenido p { font-size: 1.1em; margin-bottom: 20px; color: #333; }
+        .modal-contenido button { padding: 10px 20px; font-weight: bold; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -204,7 +117,6 @@
         <button id="btn-editar">✏️ Activar Edición</button>
     </div>
 
-    <!-- RESUMEN ANUAL -->
     <div class="resumen-top">
         <p>📊 Resumen Anual</p>
         <ul>
@@ -217,7 +129,8 @@
             <li><span class="leg-dot bg-curso"></span>Cursos:&nbsp;<strong id="count-curso">0</strong></li>
             <li><span class="leg-dot bg-lib-s"></span>Libre Sáb:&nbsp;<strong id="count-libre-sabado">0</strong></li>
             <li><span class="leg-dot bg-sab-p"></span>Sáb. Prod:&nbsp;<strong id="count-sabado-prod">0</strong></li>
-            <li style="background: #fff3cd; border-color: #ffeeba;">⏱️ H. Extra:&nbsp;<strong id="count-horas">0</strong>h</li>
+            <li><span class="leg-dot bg-otros"></span>Otros:&nbsp;<strong id="count-otros">0</strong></li>
+            <li style="background: #fff3cd; border-color: #ffeeba; margin-top:5px; width:100%; text-align:center; justify-content:center;">⏱️ H. Extra:&nbsp;<strong id="count-horas">0</strong>h</li>
         </ul>
     </div>
 
@@ -236,10 +149,11 @@
         <button class="btn-accion" data-tipo="curso" style="background-color: #f39200; color: black;">Curso</button>
         <button class="btn-accion" data-tipo="libre_sabado" style="background-color: #d8b4e2; color: black;">Libre (Sáb)</button>
         <button class="btn-accion" data-tipo="sabado_produccion" style="background-color: #d35400; color: white;">Sáb. Prod</button>
+        <button class="btn-accion" data-tipo="otros" style="background-color: #555555; color: white;">Otros (Con Nota)</button>
         <button class="btn-accion" data-tipo="" style="background: #fff; color: black; border: 1px solid #ccc;">Borrar Estado</button>
         
         <div class="horas-container">
-            <input type="number" id="input-horas" placeholder="Horas" step="0.5" min="0">
+            <input type="text" inputmode="decimal" id="input-horas" placeholder="Horas">
             <button id="btn-add-horas" style="padding: 10px; border-radius: 8px; font-weight: bold; background-color: #17a2b8; color: white; border: none;">Añadir Horas</button>
         </div>
 
@@ -254,6 +168,15 @@
         <input type="file" id="input-file-import" accept=".json" style="display: none;">
     </div>
 
+    <!-- MODAL/BOCADILLO PARA VER LAS NOTAS -->
+    <div id="modal-nota">
+        <div class="modal-contenido">
+            <h3 id="modal-fecha">Fecha</h3>
+            <p id="modal-texto"></p>
+            <button onclick="document.getElementById('modal-nota').style.display='none'">Cerrar</button>
+        </div>
+    </div>
+
     <script>
         const nombresMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
         
@@ -262,8 +185,6 @@
 
         let modoEdicion = false;
         let diasSeleccionados = new Set();
-        
-        // Control para hacer scroll automático solo al abrir la app la primera vez
         let esPrimeraCarga = true; 
 
         const selectorTurno = document.getElementById('selector-turno');
@@ -282,7 +203,10 @@
             let migrado = false;
             for (let f in datos) {
                 if (typeof datos[f] === 'string') {
-                    datos[f] = { tipo: datos[f], extra: 0 };
+                    datos[f] = { tipo: datos[f], extra: 0, notas: '' };
+                    migrado = true;
+                } else if (!datos[f].hasOwnProperty('notas')) {
+                    datos[f].notas = '';
                     migrado = true;
                 }
             }
@@ -302,11 +226,9 @@
             d.setDate(d.getDate() + diffToMonday);
             d.setHours(0,0,0,0);
             refDate.setHours(0,0,0,0);
-            
             let diffTime = d.getTime() - refDate.getTime();
             let diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7));
             let cycle = ((diffWeeks % 4) + 4) % 4; 
-            
             const turnoSeleccionado = selectorTurno.value;
             if (turnoSeleccionado === 'B') {
                 return (cycle === 0 || cycle === 1) ? 'M' : 'T';
@@ -336,7 +258,6 @@
 
         function cargarFestivosYVacacionesAutomatico(ano) {
             const keyInicializado = 'inicializado_festivos_v3_' + ano;
-            
             if (!localStorage.getItem(keyInicializado)) {
                 const datos = obtenerDatosStorage();
                 let seModifico = false;
@@ -353,32 +274,29 @@
                 festivos.push(`${ano}-${String(viernesSanto.getMonth() + 1).padStart(2, '0')}-${String(viernesSanto.getDate()).padStart(2, '0')}`);
 
                 festivos.forEach(fecha => { 
-                    if (!datos[fecha]) { datos[fecha] = {tipo: 'festivo', extra: 0}; seModifico = true; }
+                    if (!datos[fecha]) { datos[fecha] = {tipo: 'festivo', extra: 0, notas: ''}; seModifico = true; }
                 });
 
                 for (let i = 1; i <= 5; i++) {
                     const d = new Date(pascua);
                     d.setDate(pascua.getDate() + i);
                     const fecha = `${ano}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                    if (!datos[fecha]) { datos[fecha] = {tipo: 'vacaciones', extra: 0}; seModifico = true; }
+                    if (!datos[fecha]) { datos[fecha] = {tipo: 'vacaciones', extra: 0, notas: ''}; seModifico = true; }
                 }
 
                 let fechaVerano = new Date(ano, 7, 1); 
                 let diaSemana = fechaVerano.getDay();
-                
                 if (diaSemana === 5 || diaSemana === 6 || diaSemana === 0) {
-                    let diasParaLunes = (diaSemana === 0) ? 1 : 8 - diaSemana;
-                    fechaVerano.setDate(fechaVerano.getDate() + diasParaLunes);
+                    fechaVerano.setDate(fechaVerano.getDate() + ((diaSemana === 0) ? 1 : 8 - diaSemana));
                 } else {
-                    let diasParaLunes = 1 - diaSemana;
-                    fechaVerano.setDate(fechaVerano.getDate() + diasParaLunes);
+                    fechaVerano.setDate(fechaVerano.getDate() + (1 - diaSemana));
                 }
                 
                 for (let i = 0; i < 21; i++) {
                     let diaActualSemana = fechaVerano.getDay();
                     if (diaActualSemana !== 0 && diaActualSemana !== 6) {
                         const fechaStr = `${fechaVerano.getFullYear()}-${String(fechaVerano.getMonth() + 1).padStart(2, '0')}-${String(fechaVerano.getDate()).padStart(2, '0')}`;
-                        if (!datos[fechaStr]) { datos[fechaStr] = {tipo: 'vacaciones', extra: 0}; seModifico = true; }
+                        if (!datos[fechaStr]) { datos[fechaStr] = {tipo: 'vacaciones', extra: 0, notas: ''}; seModifico = true; }
                     }
                     fechaVerano.setDate(fechaVerano.getDate() + 1);
                 }
@@ -393,13 +311,10 @@
             dibujarCalendario(anoActual);
             actualizarContadores();
             
-            // Lógica de Scroll Automático al día de hoy
             if (esPrimeraCarga && anoActual === new Date().getFullYear()) {
                 setTimeout(() => {
                     const diaActual = document.getElementById('dia-actual');
-                    if (diaActual) {
-                        diaActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    if (diaActual) diaActual.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 300); 
                 esPrimeraCarga = false; 
             }
@@ -417,10 +332,8 @@
                 const divMes = document.createElement('div');
                 divMes.className = 'mes';
                 divMes.innerHTML = `<h3>${nombresMeses[mes]}</h3>`;
-
                 const divGrid = document.createElement('div');
                 divGrid.className = 'dias-grid';
-
                 ['L', 'M', 'X', 'J', 'V', 'S', 'D'].forEach(d => divGrid.innerHTML += `<div class="dia-semana">${d}</div>`);
 
                 let primerDia = new Date(ano, mes, 1).getDay();
@@ -429,7 +342,6 @@
 
                 for (let i = 0; i < primerDia; i++) divGrid.innerHTML += `<div class="vacio"></div>`;
 
-                // --- CALCULAR EL DÍA DE PAGO (5º Día Laborable) ---
                 let diaPagoDelMes = 0;
                 let laborables = 0;
                 for (let d = 1; d <= diasEnMes; d++) {
@@ -437,19 +349,13 @@
                     let dStr = String(d).padStart(2, '0');
                     let fMySQL = `${ano}-${mStr}-${dStr}`;
                     let fDia = new Date(ano, mes, d).getDay();
-                    
                     let esFinde = (fDia === 0 || fDia === 6);
                     let esFestivo = (todosLosDatos[fMySQL] && todosLosDatos[fMySQL].tipo === 'festivo');
-                    
                     if (!esFinde && !esFestivo) {
                         laborables++;
-                        if (laborables === 5) {
-                            diaPagoDelMes = d;
-                            break;
-                        }
+                        if (laborables === 5) { diaPagoDelMes = d; break; }
                     }
                 }
-                // ----------------------------------------------------
 
                 for (let dia = 1; dia <= diasEnMes; dia++) {
                     const mesStr = String(mes + 1).padStart(2, '0');
@@ -460,44 +366,54 @@
                     const diaSemana = fechaParaDiaSemana.getDay();
                     const claseFinSemana = (diaSemana === 0 || diaSemana === 6) ? 'fin-semana' : '';
                     
-                    let objData = todosLosDatos[fechaMySQL] || { tipo: '', extra: 0 };
+                    let objData = todosLosDatos[fechaMySQL] || { tipo: '', extra: 0, notas: '' };
                     let claseTipo = objData.tipo;
                     if (claseTipo === 'erte') claseTipo = 'erte_colectivo';
 
-                    let turnoLetra = obtenerTurnoDia(fechaParaDiaSemana);
-                    let htmlTurno = `<span class="turno-badge">${turnoLetra}</span>`;
+                    let htmlTurno = `<span class="turno-badge">${obtenerTurnoDia(fechaParaDiaSemana)}</span>`;
                     let htmlHoras = objData.extra > 0 ? `<span class="horas-badge">+${objData.extra}h</span>` : '';
-                    
-                    // --- SÍMBOLO DE PAGO ---
                     let htmlPago = (dia === diaPagoDelMes) ? `<span class="pago-badge">€</span>` : '';
-                    
+                    let htmlNota = objData.notas !== '' ? `<span class="nota-badge">📌</span>` : '';
+
                     let esHoy = (fechaMySQL === strHoy);
                     let claseHoy = esHoy ? 'hoy' : '';
                     let idHoy = esHoy ? 'id="dia-actual"' : '';
 
+                    let notaEscapada = objData.notas.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+
                     divGrid.innerHTML += `
-                        <div ${idHoy} class="dia ${claseTipo} ${claseFinSemana} ${claseHoy}" data-fecha="${fechaMySQL}" data-mes="${mesStr}" onclick="manejarClickDia(this)">
+                        <div ${idHoy} class="dia ${claseTipo} ${claseFinSemana} ${claseHoy}" data-fecha="${fechaMySQL}" data-mes="${mesStr}" data-nota="${notaEscapada}" onclick="manejarClickDia(this)">
                             ${htmlTurno}
                             <span style="display:block; margin-top:2px;">${dia}</span>
                             ${htmlHoras}
                             ${htmlPago}
+                            ${htmlNota}
                         </div>`;
                 }
                 
                 divMes.appendChild(divGrid);
-
                 const divResumenMes = document.createElement('div');
                 divResumenMes.className = 'resumen-mes';
                 divResumenMes.id = `resumen-mes-${String(mes + 1).padStart(2, '0')}`;
                 divMes.appendChild(divResumenMes);
-
                 contenedor.appendChild(divMes);
             }
         }
 
         function manejarClickDia(elemento) {
-            if (!modoEdicion) return; 
             const fecha = elemento.getAttribute('data-fecha');
+            
+            if (!modoEdicion) {
+                const nota = elemento.getAttribute('data-nota');
+                if (nota && nota !== '') {
+                    let partesFecha = fecha.split('-');
+                    document.getElementById('modal-fecha').innerText = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]}`;
+                    document.getElementById('modal-texto').innerText = nota;
+                    document.getElementById('modal-nota').style.display = 'flex';
+                }
+                return; 
+            }
+
             if (diasSeleccionados.has(fecha)) {
                 diasSeleccionados.delete(fecha);
                 elemento.classList.remove('seleccionado');
@@ -510,7 +426,6 @@
         document.getElementById('btn-editar').addEventListener('click', (e) => {
             modoEdicion = !modoEdicion;
             const panel = document.getElementById('panel-acciones');
-            
             if (modoEdicion) {
                 e.target.innerText = "❌ Cancelar Edición";
                 e.target.style.background = "#ff9999"; 
@@ -523,57 +438,61 @@
             }
         });
 
-        document.getElementById('btn-guardar-panel').addEventListener('click', () => { document.getElementById('btn-editar').click(); });
-
         function limpiarSeleccion() {
             diasSeleccionados.clear();
             document.querySelectorAll('.dia.seleccionado').forEach(el => el.classList.remove('seleccionado'));
         }
 
-        document.querySelectorAll('.btn-accion[data-tipo]').forEach(boton => {
-            boton.addEventListener('click', (e) => {
-                const nuevoTipo = e.target.getAttribute('data-tipo');
-                if (diasSeleccionados.size === 0) return alert("Primero selecciona algún día en el calendario.");
-
-                const datos = obtenerDatosStorage();
-                diasSeleccionados.forEach(fecha => {
-                    datos[fecha] = datos[fecha] || { tipo: '', extra: 0 };
-                    datos[fecha].tipo = nuevoTipo; 
-                    if(nuevoTipo === '' && datos[fecha].extra === 0) delete datos[fecha]; 
-                });
-
-                guardarDatosStorage(datos);
-                cargarDatos();
-                limpiarSeleccion();
-            });
-        });
-
-        document.getElementById('btn-add-horas').addEventListener('click', () => {
-            let numHoras = parseFloat(document.getElementById('input-horas').value);
-            if (isNaN(numHoras) || numHoras < 0) numHoras = 0; 
-            
+        function aplicarCambios(tipoNuevo = null, esSoloHoras = false) {
             if (diasSeleccionados.size === 0) return alert("Primero selecciona algún día en el calendario.");
+            
+            let valorInput = document.getElementById('input-horas').value.replace(',', '.');
+            let numHoras = parseFloat(valorInput);
+            let inputTieneHoras = valorInput !== '' && !isNaN(numHoras) && numHoras >= 0;
+            
+            let textoNota = '';
+            if (tipoNuevo === 'otros') {
+                textoNota = prompt("Indica el motivo (ej: Baja médica, Hospitalización...):");
+                if (textoNota === null) return; 
+            }
 
             const datos = obtenerDatosStorage();
+            
             diasSeleccionados.forEach(fecha => {
-                datos[fecha] = datos[fecha] || { tipo: '', extra: 0 };
-                datos[fecha].extra = numHoras;
-                if(datos[fecha].tipo === '' && numHoras === 0) delete datos[fecha];
+                let currentData = datos[fecha] || { tipo: '', extra: 0, notas: '' };
+                
+                let tipoFinal = esSoloHoras ? currentData.tipo : (tipoNuevo !== null ? tipoNuevo : currentData.tipo);
+                let extraFinal = inputTieneHoras ? numHoras : currentData.extra;
+                let notaFinal = (tipoNuevo === 'otros') ? textoNota : (tipoNuevo === '' ? '' : currentData.notas);
+                
+                if (tipoFinal === '' && extraFinal === 0 && notaFinal === '') {
+                    delete datos[fecha];
+                } else {
+                    datos[fecha] = { tipo: tipoFinal, extra: extraFinal, notas: notaFinal };
+                }
             });
 
             guardarDatosStorage(datos);
-            cargarDatos();
-            limpiarSeleccion();
             document.getElementById('input-horas').value = '';
+            limpiarSeleccion();
+            cargarDatos();
+        }
+
+        document.querySelectorAll('.btn-accion[data-tipo]').forEach(boton => {
+            boton.addEventListener('click', (e) => { aplicarCambios(e.target.getAttribute('data-tipo'), false); });
+        });
+
+        document.getElementById('btn-add-horas').addEventListener('click', () => { aplicarCambios(null, true); });
+
+        document.getElementById('btn-guardar-panel').addEventListener('click', () => {
+            if (document.getElementById('input-horas').value !== '') { aplicarCambios(null, true); }
+            document.getElementById('btn-editar').click(); 
         });
 
         function actualizarContadores() {
-            let anuales = { festivo: 0, vacaciones: 0, permiso: 0, erte_colectivo: 0, erte_individual: 0, industrial: 0, curso: 0, libre_sabado: 0, sabado_produccion: 0, horas: 0 };
-            
+            let anuales = { festivo: 0, vacaciones: 0, permiso: 0, erte_colectivo: 0, erte_individual: 0, industrial: 0, curso: 0, libre_sabado: 0, sabado_produccion: 0, otros: 0, horas: 0 };
             let mensuales = {};
-            for(let i=1; i<=12; i++) {
-                mensuales[String(i).padStart(2, '0')] = { festivo: 0, vacaciones: 0, permiso: 0, erte_colectivo: 0, erte_individual: 0, industrial: 0, curso: 0, libre_sabado: 0, sabado_produccion: 0, horas: 0 };
-            }
+            for(let i=1; i<=12; i++) { mensuales[String(i).padStart(2, '0')] = { festivo: 0, vacaciones: 0, permiso: 0, erte_colectivo: 0, erte_individual: 0, industrial: 0, curso: 0, libre_sabado: 0, sabado_produccion: 0, otros: 0, horas: 0 }; }
 
             const todosLosDias = document.querySelectorAll('.dia:not(.vacio)');
             const datos = obtenerDatosStorage();
@@ -594,6 +513,7 @@
                 else if (dia.classList.contains('curso')) add('curso');
                 else if (dia.classList.contains('libre_sabado')) add('libre_sabado');
                 else if (dia.classList.contains('sabado_produccion')) add('sabado_produccion');
+                else if (dia.classList.contains('otros')) add('otros');
 
                 anuales.horas += hExtra;
                 mensuales[mes].horas += hExtra;
@@ -608,6 +528,7 @@
             document.getElementById('count-curso').innerText = anuales.curso;
             document.getElementById('count-libre-sabado').innerText = anuales.libre_sabado;
             document.getElementById('count-sabado-prod').innerText = anuales.sabado_produccion;
+            document.getElementById('count-otros').innerText = anuales.otros;
             document.getElementById('count-horas').innerText = anuales.horas;
 
             for(let i=1; i<=12; i++) {
@@ -625,13 +546,9 @@
                     if (cm.curso > 0) html.push(`<span class="leg-dot bg-curso"></span>Cur: ${cm.curso}`);
                     if (cm.libre_sabado > 0) html.push(`<span class="leg-dot bg-lib-s"></span>L.Sáb: ${cm.libre_sabado}`);
                     if (cm.sabado_produccion > 0) html.push(`<span class="leg-dot bg-sab-p"></span>S.Prd: ${cm.sabado_produccion}`);
+                    if (cm.otros > 0) html.push(`<span class="leg-dot bg-otros"></span>Otr: ${cm.otros}`);
                     if (cm.horas > 0) html.push(`⏱️ Ex: ${cm.horas}h`);
-
-                    if (html.length === 0) {
-                        divResumen.innerHTML = '<span style="color:#bbb; font-size: 0.75em;">Sin registros</span>';
-                    } else {
-                        divResumen.innerHTML = html.map(item => `<span class="badge-mes">${item}</span>`).join('');
-                    }
+                    divResumen.innerHTML = html.length === 0 ? '<span style="color:#bbb; font-size: 0.75em;">Sin registros</span>' : html.map(item => `<span class="badge-mes">${item}</span>`).join('');
                 }
             }
         }
