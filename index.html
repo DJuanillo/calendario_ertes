@@ -274,7 +274,8 @@
         }
 
         function cargarFestivosYVacacionesAutomatico(ano) {
-            const keyInicializado = 'inicializado_festivos_v3_' + ano;
+            // Cambiamos a v4 para forzar que recalcule e incluya los de diciembre
+            const keyInicializado = 'inicializado_festivos_v4_' + ano;
             if (!localStorage.getItem(keyInicializado)) {
                 const datos = obtenerDatosStorage();
                 let seModifico = false;
@@ -317,6 +318,21 @@
                     }
                     fechaVerano.setDate(fechaVerano.getDate() + 1);
                 }
+
+                // --- NUEVO: Vacaciones del 26 al 31 de diciembre ---
+                for (let dia = 26; dia <= 31; dia++) {
+                    let fechaDic = new Date(ano, 11, dia); // El mes 11 en JavaScript es Diciembre
+                    let diaSemanaDic = fechaDic.getDay();
+                    // Comprobamos que no sea ni domingo (0) ni sábado (6)
+                    if (diaSemanaDic !== 0 && diaSemanaDic !== 6) {
+                        const fechaStr = `${ano}-12-${String(dia).padStart(2, '0')}`;
+                        if (!datos[fechaStr]) { 
+                            datos[fechaStr] = {tipo: 'vacaciones', extra: 0, notas: ''}; 
+                            seModifico = true; 
+                        }
+                    }
+                }
+                // -----------------------------------------------------
 
                 if (seModifico) guardarDatosStorage(datos);
                 localStorage.setItem(keyInicializado, 'true');
